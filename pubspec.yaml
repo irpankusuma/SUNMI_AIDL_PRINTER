@@ -1,8 +1,8 @@
 name: sunmi_aidl_print
-description: A new flutter plugin project.
+description: SUNMI POS PRINTER with AIDL WOYOU.
 version: 0.0.1
-author:
-homepage:
+author: 'irpankusuma<irpan.kusuma@gmail.com>'
+homepage: 'https://github.com/irpankusuma'
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
