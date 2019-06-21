@@ -24,6 +24,8 @@ samples, guidance on mobile development, and a full API reference.
 
 
 ## How To Use
+
+Add bind printer within initState
 <code>
   // 1. bindservice 
   @override
@@ -31,7 +33,5 @@ samples, guidance on mobile development, and a full API reference.
     super.initState();
     SunmiAidlPrint.bindPrinter();
   }
-
-  
-
 </code>
+
