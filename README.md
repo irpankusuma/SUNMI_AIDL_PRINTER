@@ -29,9 +29,9 @@ samples, guidance on mobile development, and a full API reference.
   @override
   void initState() {
     super.initState();
-
     SunmiAidlPrint.bindPrinter();
   }
+
   
 
 </code>
