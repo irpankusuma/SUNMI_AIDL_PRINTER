@@ -98,7 +98,7 @@ class SunmiAidlPrint {
     await _channel.invokeMethod("printQRCodeZXING",args);
   }
 
-  static Future<Null> printQRCode({ String text, int moduleSize, int errorLevel }) async {
+  static Future<Null> printQRCode({ String text, int moduleSize, ERRORLEVEL errorLevel }) async {
     Map<String,dynamic> args = <String,dynamic>{};
     args.putIfAbsent("text", () => text);
     args.putIfAbsent("moduleSize", () => moduleSize > 16 ? 16 : moduleSize < 4 ? 4 : 4);
@@ -138,6 +138,56 @@ class SunmiAidlPrint {
     Map<String,dynamic> args = <String,dynamic>{};
     args.putIfAbsent("bitmap", () => bitmap);
     await _channel.invokeMethod("printBitmap",args);
+  }
+
+  static Future<Null> nextLine({ int line }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("line", () => line);
+    await _channel.invokeMethod("nextLine",args);
+  }
+
+  static Future<Null> initBlackBox({ int width, int height }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("width", () => width);
+    args.putIfAbsent("height", () => height);
+
+    await _channel.invokeMethod("initBlackBox",args);
+  }
+
+  static Future<Null> initGrayBox({ int width, int height }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("width", () => width);
+    args.putIfAbsent("height", () => height);
+
+    await _channel.invokeMethod("initGrayBox",args);
+  }
+
+  static Future<Null> initTable({ int width, int height }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("width", () => width);
+    args.putIfAbsent("height", () => height);
+
+    await _channel.invokeMethod("initTable",args);
+  }
+
+  static Future<Null> underline1Dot() async {
+    await _channel.invokeMethod("underline1Dot");
+  }
+
+  static Future<Null> underline2Dot() async {
+    await _channel.invokeMethod("underline2Dot");
+  }
+
+  static Future<Null> underlineOff() async {
+    await _channel.invokeMethod("underlineOff");
+  }
+
+  static Future<Null> boldOn() async {
+    await _channel.invokeMethod("boldOn");
+  }
+
+  static Future<Null> boldOff() async {
+    await _channel.invokeMethod("boldOff");
   }
 }
 

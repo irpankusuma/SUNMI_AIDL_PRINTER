@@ -2,6 +2,7 @@ package asriworks.com.sunmi_aidl_print;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.widget.Toast;
 
 import io.flutter.plugin.common.MethodCall;
@@ -102,16 +103,16 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
       int[] align = call.argument("align");
       this.printColumnText(text,width,align);
     }
-    else if(call.method.equals("printQRCodeZXING")){
-      String text = call.argument("text");
-      int size = call.argument("size");
-      this.printQRCodeWithZxing(text,size);
-    }
     else if(call.method.equals("printQRCode")){
       String text = call.argument("text");
       int moduleSize = call.argument("moduleSize");
       int errorLevel = call.argument("errorLevel");
-      this.printQRCode(text,moduleSize,errorLevel);
+      byte[] bytes = BytesUtil.getPrintQRCode(text,moduleSize,errorLevel);
+      try {
+        woyouService.sendRAWData(bytes,callback);
+      } catch (Exception e){
+        e.printStackTrace();
+      }
     }
     else if(call.method.equals("printBarcode")){
       String text = call.argument("text");
@@ -119,12 +120,98 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
       int height = call.argument("height");
       int width = call.argument("width");
       int position = call.argument("textPosition");
-      this.printBarcode(text,symbology,height,width,position);
+      byte[] bytes = BytesUtil.getPrintBarCode(text,symbology,height,width,position);
+      try {
+        woyouService.sendRAWData(bytes,callback);
+      } catch (Exception e){
+        e.printStackTrace();
+      }
     }
     else if(call.method.equals("printBitmap")){
-      Bitmap bitmap = call.argument("bitmap");
+      byte[] bytes = call.argument("bitmap");
+      Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
       this.printBitmap(bitmap);
     }
+    else if(call.method.equals("nextLine")){
+        int line = call.argument("line");
+        try {
+            byte[] bytes = BytesUtil.nextLine(line);
+            woyouService.sendRAWData(bytes,callback);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    else if(call.method.equals("initBlackBox")){
+        int w = call.argument("width");
+        int h = call.argument("height");
+        try {
+            byte[] bytes = BytesUtil.initBlackBlock(w,h);
+            woyouService.sendRAWData(bytes,callback);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    else if(call.method.equals("initGrayBox")){
+        int w = call.argument("width");
+        int h = call.argument("height");
+        try {
+            byte[] bytes = BytesUtil.initGrayBlock(w,h);
+            woyouService.sendRAWData(bytes,callback);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    else if(call.method.equals("initTable")){
+        int w = call.argument("width");
+        int h = call.argument("height");
+        try {
+            byte[] bytes = BytesUtil.initTable(w,h);
+            woyouService.sendRAWData(bytes,callback);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    else if(call.method.equals("underline1Dot")){
+        try {
+            byte[] bytes = BytesUtil.underlineWithOneDotWidthOn();
+            woyouService.sendRAWData(bytes,callback);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    else if(call.method.equals("underline2Dot")){
+        try {
+            byte[] bytes = BytesUtil.underlineWithTwoDotWidthOn();
+            woyouService.sendRAWData(bytes,callback);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    else if(call.method.equals("underlineOff")){
+        try {
+            byte[] bytes = BytesUtil.underlineOff();
+            woyouService.sendRAWData(bytes,callback);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    else if(call.method.equals("boldOn")){
+        try {
+            byte[] bytes = BytesUtil.boldOn();
+            woyouService.sendRAWData(bytes,callback);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    else if(call.method.equals("boldOff")){
+        try {
+            byte[] bytes = BytesUtil.boldOff();
+            woyouService.sendRAWData(bytes,callback);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
 
     // NOT FOUND
     else { result.notImplemented(); }
@@ -442,6 +529,7 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
       public void run() {
         try {
           woyouService.printBitmap(bitmap,callback);
+          woyouService.lineWrap(3,callback);
         } catch (RemoteException e){
           e.printStackTrace();
         }
@@ -449,24 +537,24 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
     });
   }
 
-  /**
-   *
-   * @param data
-   * @param size
-   */
-  public void printQRCodeWithZxing(final String data, final int size){
-    ThreadPoolManager.getInstance().executeTask(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          byte[] bytes = BytesUtil.getZXingQRCode(data,size);
-          woyouService.sendRAWData(bytes,callback);
-        } catch (RemoteException e){
-          e.printStackTrace();
-        }
-      }
-    });
-  }
+//  /**
+//   *
+//   * @param data
+//   * @param size
+//   */
+//  public void printQRCodeWithZxing(final String data, final int size){
+//    ThreadPoolManager.getInstance().executeTask(new Runnable() {
+//      @Override
+//      public void run() {
+//        try {
+//          byte[] bytes = BytesUtil.getZXingQRCode(data,size);
+//          woyouService.sendRAWData(bytes,callback);
+//        } catch (RemoteException e){
+//          e.printStackTrace();
+//        }
+//      }
+//    });
+//  }
 
   /**
    *

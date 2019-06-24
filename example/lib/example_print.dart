@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:sunmi_aidl_print/sunmi_aidl_print.dart';
-
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/rendering.dart';
 
 class SymbologyData {
   final SYMBOLOGY code;
@@ -23,6 +27,14 @@ class TextPosition {
   const TextPosition({ this.code, this.name });
 }
 
+class ItemData {
+  final int itemQty;
+  final String itemDesc;
+  final String itemPrice;
+
+  const ItemData({ this.itemQty,this.itemDesc,this.itemPrice });
+}
+
 
 class ExamplePrint_View extends StatefulWidget {
   ExamplePrint_View({Key key}) : super(key: key);
@@ -40,10 +52,40 @@ class _ExamplePrint_ViewState extends State<ExamplePrint_View> {
   List<SymbologyData> _listSymbol = <SymbologyData>[];
   List<ErrorLevelData> _listError = <ErrorLevelData>[];
   List<TextPosition> _listTextPosition = <TextPosition>[];
+  List<ItemData> _itemData = <ItemData>[];
 
   SymbologyData _selectedSymbology;
   ErrorLevelData _selectedErrorLevel;
   TextPosition _selectedTextPosition;
+
+  GlobalKey _globalKey = new GlobalKey();
+  bool inside = false;
+  Uint8List imageInMemory;
+  Uint8List image;
+
+  Future<Uint8List> _capturePng() async {
+    try {
+      inside = true;
+      RenderRepaintBoundary boundary = _globalKey.currentContext.findRenderObject();
+      ui.Image image = await boundary.toImage(pixelRatio: 1.0);
+      ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData.buffer.asUint8List();
+      String bs64 = base64Encode(pngBytes);
+      SunmiAidlPrint.printBitmap(bitmap: pngBytes);
+
+
+      print(pngBytes);
+      print(bs64);
+      print('png done');
+      setState(() {
+        imageInMemory = pngBytes;
+        inside = false;
+      });
+      return pngBytes;
+    } catch (e) {
+      print(e);
+    }
+  }
 
 
   @override
@@ -75,6 +117,12 @@ class _ExamplePrint_ViewState extends State<ExamplePrint_View> {
     _listTextPosition.add(new TextPosition(code: TEXTPOS.ABOVE_BARCODE, name: "ABOVE BARCODE"));
     _listTextPosition.add(new TextPosition(code: TEXTPOS.BELOW_BARCODE, name: "BELOW BARCODE"));
     _listTextPosition.add(new TextPosition(code: TEXTPOS.BOTH, name: "BOTH"));
+
+    _itemData.add(new ItemData(itemQty: 10,itemDesc: "DESCRIPTION 01", itemPrice: "150.000"));
+    _itemData.add(new ItemData(itemQty: 20,itemDesc: "DESCRIPTION 02", itemPrice: "100.000"));
+    _itemData.add(new ItemData(itemQty: 5,itemDesc: "DESCRIPTION 03", itemPrice: "200.000"));
+
+
 
     super.initState();
   }
@@ -215,7 +263,7 @@ class _ExamplePrint_ViewState extends State<ExamplePrint_View> {
                       child: new Text('PRINT QRCODE'),
                       onPressed: () {
                         SunmiAidlPrint.setAlignment(align:TEXTALIGN.CENTER);
-                        SunmiAidlPrint.printQRCodeZXING(text: _text.text,size: int.parse(_size.text));
+                        SunmiAidlPrint.printQRCode(text: _text.text,moduleSize:4,errorLevel:ERRORLEVEL.L);
                         SunmiAidlPrint.setLineWrap(line: 3);
                       }
                     )
@@ -320,6 +368,33 @@ class _ExamplePrint_ViewState extends State<ExamplePrint_View> {
                     )
                   ],
                 ),
+              ),
+            ),
+
+            new Container(
+              margin: EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 0.0),
+              child: new Card(
+                child: new Column(
+                  children: <Widget>[
+                    new RaisedButton(
+                      color: Colors.red,
+                      child: Text('CAPTURE IMAGE', style: TextStyle(color:Colors.white),),
+                      onPressed: _capturePng,
+                    ),
+                    inside ? CircularProgressIndicator()
+                    :
+                    imageInMemory != null
+                        ? Container(
+                            child: Image.memory(imageInMemory),
+                            margin: EdgeInsets.all(10))
+                        : Container(),
+                    new RaisedButton(
+                      color: Colors.red,
+                      child: Text('PRINT IMAGE', style: TextStyle(color:Colors.white),),
+                      onPressed: () => Navigator.pushNamed(context, '/print'),
+                    ),
+                  ],
+                ),
               )
             ),
           ],
@@ -328,3 +403,4 @@ class _ExamplePrint_ViewState extends State<ExamplePrint_View> {
     );
   }
 }
+

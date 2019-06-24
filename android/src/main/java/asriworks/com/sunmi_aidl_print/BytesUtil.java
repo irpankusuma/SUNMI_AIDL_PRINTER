@@ -1,18 +1,24 @@
 package asriworks.com.sunmi_aidl_print;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Hashtable;
-
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 
 public class BytesUtil {
+
+    public static final byte ESC = 27;// 换码
+    public static final byte FS = 28;// 文本分隔符
+    public static final byte GS = 29;// 组分隔符
+    public static final byte DLE = 16;// 数据连接换码
+    public static final byte EOT = 4;// 传输结束
+    public static final byte ENQ = 5;// 询问字符
+    public static final byte SP = 32;// 空格
+    public static final byte HT = 9;// 横向列表
+    public static final byte LF = 10;// 打印并换行（水平定位）
+    public static final byte CR = 13;// 归位键
+    public static final byte FF = 12;// 走纸控制（打印并回到标准模式（在页模式下） ）
+    public static final byte CAN = 24;// 作废（页模式下取消打印数据 ）
+
     /**
      * 生成间断性黑块数据
      * @param w : 打印纸宽度, 单位点
@@ -206,6 +212,162 @@ public class BytesUtil {
 
         return returnText;
     }
+
+    /**
+     * 打印机初始化
+     *
+     * @return
+     */
+    public static byte[] init_printer() {
+        byte[] result = new byte[2];
+        result[0] = ESC;
+        result[1] = 64;
+        return result;
+    }
+
+    // ------------------------换行-----------------------------
+
+    /**
+     * 换行
+     *
+     * @param lineNum
+     * @return
+     */
+    public static byte[] nextLine(int lineNum) {
+        byte[] result = new byte[lineNum];
+        for (int i = 0; i < lineNum; i++) {
+            result[i] = LF;
+        }
+
+        return result;
+    }
+
+    // ------------------------下划线-----------------------------
+
+    /**
+     * 绘制下划线（1点宽）
+     *
+     * @return
+     */
+    public static byte[] underlineWithOneDotWidthOn() {
+        byte[] result = new byte[3];
+        result[0] = ESC;
+        result[1] = 45;
+        result[2] = 1;
+        return result;
+    }
+
+    /**
+     * 绘制下划线（2点宽）
+     *
+     * @return
+     */
+    public static byte[] underlineWithTwoDotWidthOn() {
+        byte[] result = new byte[3];
+        result[0] = ESC;
+        result[1] = 45;
+        result[2] = 2;
+        return result;
+    }
+
+    /**
+     * 取消绘制下划线
+     *
+     * @return
+     */
+    public static byte[] underlineOff() {
+        byte[] result = new byte[3];
+        result[0] = ESC;
+        result[1] = 45;
+        result[2] = 0;
+        return result;
+    }
+
+    // ------------------------加粗-----------------------------
+
+    /**
+     * 选择加粗模式
+     *
+     * @return
+     */
+    public static byte[] boldOn() {
+        byte[] result = new byte[3];
+        result[0] = ESC;
+        result[1] = 69;
+        result[2] = 0xF;
+        return result;
+    }
+
+    /**
+     * 取消加粗模式
+     *
+     * @return
+     */
+    public static byte[] boldOff() {
+        byte[] result = new byte[3];
+        result[0] = ESC;
+        result[1] = 69;
+        result[2] = 0;
+        return result;
+    }
+
+    // ------------------------对齐-----------------------------
+
+    /**
+     * 左对齐
+     *
+     * @return
+     */
+    public static byte[] alignLeft() {
+        byte[] result = new byte[3];
+        result[0] = ESC;
+        result[1] = 97;
+        result[2] = 0;
+        return result;
+    }
+
+    /**
+     * 居中对齐
+     *
+     * @return
+     */
+    public static byte[] alignCenter() {
+        byte[] result = new byte[3];
+        result[0] = ESC;
+        result[1] = 97;
+        result[2] = 1;
+        return result;
+    }
+
+    /**
+     * 右对齐
+     *
+     * @return
+     */
+    public static byte[] alignRight() {
+        byte[] result = new byte[3];
+        result[0] = ESC;
+        result[1] = 97;
+        result[2] = 2;
+        return result;
+    }
+
+    /**
+     * 水平方向向右移动col列
+     *
+     * @param col
+     * @return
+     */
+    public static byte[] set_HT_position(byte col) {
+        byte[] result = new byte[4];
+        result[0] = ESC;
+        result[1] = 68;
+        result[2] = col;
+        result[3] = 0;
+        return result;
+    }
+    // ------------------------字体变大-----------------------------
+
     //设置放大倍数 1至8 倍 (0-7)
     public static byte[] setZoom(int level){
         byte[] rv = new byte[3];
@@ -661,61 +823,91 @@ public class BytesUtil {
         int[] pixels = createLineData(size, width);
         return getBitmapFromData(pixels, width, size + 6);
     }
-    private static byte getBitMatrixColor(BitMatrix bits, int x, int y){
-        int width = bits.getWidth();
-        int height = bits.getHeight();
-        if( x >= width || y >= height || x < 0 || y < 0)return 0;
-        if(bits.get(x, y)){
-            return 1;
-        }else{
-            return 0;
-        }
+
+    public static byte[] byteMerger(byte[] byte_1, byte[] byte_2) {
+        byte[] byte_3 = new byte[byte_1.length + byte_2.length];
+        System.arraycopy(byte_1, 0, byte_3, 0, byte_1.length);
+        System.arraycopy(byte_2, 0, byte_3, byte_1.length, byte_2.length);
+        return byte_3;
     }
 
-    public static byte[] getBytesFromBitMatrix(BitMatrix bits){
-        if(bits == null)return null;
+    public static byte[] byteMerger(byte[][] byteList) {
 
-        int h = bits.getHeight();
-        int w = (bits.getWidth()+7) / 8;
-        byte[] rv = new byte[h * w + 8];
+        int length = 0;
+        for (int i = 0; i < byteList.length; i++) {
+            length += byteList[i].length;
+        }
+        byte[] result = new byte[length];
 
-        rv[0] = 0x1D;
-        rv[1] = 0x76;
-        rv[2] = 0x30;
-        rv[3] = 0x00;
-
-        rv[4] = (byte)w;//xL
-        rv[5] = (byte)(w >> 8);//xH
-        rv[6] = (byte)h;
-        rv[7] = (byte)(h >> 8);
-
-        int k = 8;
-        for(int i=0; i<h; i++){
-            for(int j=0; j<w; j++){
-                for(int n=0; n<8; n++){
-                    byte b = getBitMatrixColor(bits, j * 8 + n, i);
-                    rv[k] += rv[k] + b;
-                }
-                k++;
+        int index = 0;
+        for (int i = 0; i < byteList.length; i++) {
+            byte[] nowByte = byteList[i];
+            for (int k = 0; k < byteList[i].length; k++) {
+                result[index] = nowByte[k];
+                index++;
             }
         }
-        return rv;
+        for (int i = 0; i < index; i++) {
+            // CommonUtils.LogWuwei("", "result[" + i + "] is " + result[i]);
+        }
+        return result;
     }
 
-    public static byte[] getZXingQRCode(String data, int size){
-        try {
-            Hashtable<EncodeHintType, String> hints = new Hashtable<EncodeHintType, String>();
-            hints.put(EncodeHintType.CHARACTER_SET, "utf-8");
-            //图像数据转换，使用了矩阵转换
-            BitMatrix bitMatrix = new QRCodeWriter().encode(data, BarcodeFormat.QR_CODE, size, size, hints);
-            System.out.println("bitmatrix height:" + bitMatrix.getHeight() + " width:" + bitMatrix.getWidth());
-            return getBytesFromBitMatrix(bitMatrix);
-        } catch (WriterException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    private static byte getBitMatrixColor(BitMatrix bits, int x, int y){
+//        int width = bits.getWidth();
+//        int height = bits.getHeight();
+//        if( x >= width || y >= height || x < 0 || y < 0)return 0;
+//        if(bits.get(x, y)){
+//            return 1;
+//        }else{
+//            return 0;
+//        }
+//    }
+
+//    public static byte[] getBytesFromBitMatrix(BitMatrix bits){
+//        if(bits == null)return null;
+//
+//        int h = bits.getHeight();
+//        int w = (bits.getWidth()+7) / 8;
+//        byte[] rv = new byte[h * w + 8];
+//
+//        rv[0] = 0x1D;
+//        rv[1] = 0x76;
+//        rv[2] = 0x30;
+//        rv[3] = 0x00;
+//
+//        rv[4] = (byte)w;//xL
+//        rv[5] = (byte)(w >> 8);//xH
+//        rv[6] = (byte)h;
+//        rv[7] = (byte)(h >> 8);
+//
+//        int k = 8;
+//        for(int i=0; i<h; i++){
+//            for(int j=0; j<w; j++){
+//                for(int n=0; n<8; n++){
+//                    byte b = getBitMatrixColor(bits, j * 8 + n, i);
+//                    rv[k] += rv[k] + b;
+//                }
+//                k++;
+//            }
+//        }
+//        return rv;
+//    }
+
+//    public static byte[] getZXingQRCode(String data, int size){
+//        try {
+//            Hashtable<EncodeHintType, String> hints = new Hashtable<EncodeHintType, String>();
+//            hints.put(EncodeHintType.CHARACTER_SET, "utf-8");
+//            //图像数据转换，使用了矩阵转换
+//            BitMatrix bitMatrix = new QRCodeWriter().encode(data, BarcodeFormat.QR_CODE, size, size, hints);
+//            System.out.println("bitmatrix height:" + bitMatrix.getHeight() + " width:" + bitMatrix.getWidth());
+//            return getBytesFromBitMatrix(bitMatrix);
+//        } catch (WriterException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
     public static byte[] getHorizontalLine(int w,  int size, int type){
         int ww = (w + 7)/8;
