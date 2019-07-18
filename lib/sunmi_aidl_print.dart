@@ -6,8 +6,9 @@ import 'package:flutter/services.dart';
 class ResultStatus {
   final int statusCode;
   final String statusMessage;
+  final String data;
   
-  const ResultStatus({ this.statusCode,this.statusMessage });
+  const ResultStatus({ this.statusCode,this.statusMessage,this.data });
 }
 
 class SunmiAidlPrint {
@@ -210,7 +211,51 @@ class SunmiAidlPrint {
     return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
   }
 
+  static Future<String> clz_clearSharedPreferences() async {
+    return await _channel.invokeMethod("clz_clearSharedPreferences");
+  }
 
+  static Future<ResultStatus> clz_activated({ @required String code }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("code", () => code);
+
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_activated",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
+  }
+
+  static Future<ResultStatus> clz_getPaymentList({ @required int page=1, String invoiceNo, String approvalCode }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("page", () => page);
+    args.putIfAbsent("invoiceNo", () => invoiceNo);
+    args.putIfAbsent("approvalCode", () => approvalCode);
+
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_getPaymentList",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage'],data: _result['PaymentHistoryList']);
+  }
+
+  static Future<ResultStatus> clz_getPaymentList_ByDate({ String date }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("date", () => date);
+
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_getPaymentList_ByDate",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage'],data: _result['PaymentHistoryList']);
+  }
+
+  static Future<ResultStatus> clz_getPaymentList_ByMerchantTransactionId({ String id }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("id", () => id);
+
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_getPaymentList_ByMerchantTransactionId",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage'],data: _result['PaymentHistoryList']);
+  }
+
+  static Future<ResultStatus> clz_getPaymentList_ByTransactionId({ String id }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("id", () => id);
+
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_getPaymentList_ByTransactionId",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage'],data: _result['PaymentHistoryList']);
+  }
 
 
 }
