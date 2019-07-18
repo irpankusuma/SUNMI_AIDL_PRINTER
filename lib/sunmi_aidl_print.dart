@@ -1,6 +1,14 @@
 import 'dart:async';
+import 'package:meta/meta.dart';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
+
+class ResultStatus {
+  final int statusCode;
+  final String statusMessage;
+  
+  const ResultStatus({ this.statusCode,this.statusMessage });
+}
 
 class SunmiAidlPrint {
   static const MethodChannel _channel = const MethodChannel('sunmi_aidl_print');
@@ -189,6 +197,22 @@ class SunmiAidlPrint {
   static Future<Null> boldOff() async {
     await _channel.invokeMethod("boldOff");
   }
+
+  /**
+   * Cashlezz
+   */
+  static Future<ResultStatus> clz_doLogin({ @required String username, @required String pin }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("username", () => username);
+    args.putIfAbsent("pin", () => pin);
+
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_doLogin",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
+  }
+
+
+
+
 }
 
 

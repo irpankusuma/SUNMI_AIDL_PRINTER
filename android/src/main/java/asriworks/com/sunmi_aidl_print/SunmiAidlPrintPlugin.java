@@ -1,17 +1,24 @@
 package asriworks.com.sunmi_aidl_print;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
+import asriworks.com.sunmi_aidl_print.cashlez.activation.Cashlez_Activation;
+import asriworks.com.sunmi_aidl_print.cashlez.history.Cashlez_PaymentHistory;
+import asriworks.com.sunmi_aidl_print.cashlez.login.Cashlez_Login;
+import asriworks.com.sunmi_aidl_print.util.Util;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-/** WOYOU **/
+/** WOYOU SUNMI **/
 import android.content.Intent;
 import woyou.aidlservice.jiuiv5.*;
 import android.content.ComponentName;
@@ -19,14 +26,28 @@ import android.content.Context;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
+
+import com.cashlez.android.sdk.CLPaymentCapability;
+import com.google.gson.Gson;
+
+import java.util.HashMap;
+
 
 /** SunmiAidlPrintPlugin */
 public class SunmiAidlPrintPlugin implements MethodCallHandler {
+  private static final String TAG = "SUNMI_AIDL_PRINT";
   private final MethodChannel channel;
   private Activity activity;
-  private static final String TAG = "SUNMI_AIDL_PRINT";
+  private Util util;
 
+  private SharedPreferences sharedPreferences;
+  protected static final String STATUS_CODE = "StatusCode";
+  protected static final String STATUS_MESSAGE = "StatusMessage";
+  protected static final String PAYMENT_CAPABILITY = "PaymentCapability";
+  protected static final String PAYMENT_HISTORY_LIST = "PaymentHistoryList";
+
+
+  /** SUNMI WOYOU **/
   private IWoyouService woyouService;
   private ICallback callback = null;
   private Context context;
@@ -47,7 +68,9 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
     this.activity = activity;
     this.channel = channel;
     this.channel.setMethodCallHandler(this);
-    this.context = context; //not used when using onCreate
+    this.context = context;         // not used when using onCreate
+    this.util = new Util(activity,context); // data callback ditampung di util buat diambil
+    this.sharedPreferences = activity.getSharedPreferences("GWK_EKIOS",Context.MODE_PRIVATE);
   }
 
   @Override
@@ -212,9 +235,78 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
         }
     }
 
+    /** CASHLEZ **/
+    else if(call.method.equals("clz_doLogin")){
+      String username = call.argument("username");
+      String pin = call.argument("pin");
+      Cashlez_Login cashlez_login = new Cashlez_Login(activity,activity);
+      cashlez_login.doLogin(username,pin);
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_clearSharedPreferences")){
+      this.clearSharedPreferences();
+      result.success("Clear localstorage success.");
+    }
+    else if(call.method.equals("clz_activated")){
+      String code = call.argument("code");
+      Cashlez_Activation cashlez_activation = new Cashlez_Activation(activity,activity);
+      cashlez_activation.doActivate(code);
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_getPaymentList")){
+      int page = call.argument("page");
+      String invoiceNo = call.argument("invoiceNo");
+      String approvalCode = call.argument("approvalCode");
+
+      Cashlez_PaymentHistory cashlez_paymentHistory = new Cashlez_PaymentHistory(activity,activity);
+      cashlez_paymentHistory.doGetPaymentList(page,invoiceNo,approvalCode);
+      result.success(cashlez_paymentHistory.getPaymentList());
+    }
+    else if(call.method.equals("clz_getPaymentList_ByDate")){
+      String date = call.argument("date");
+
+      Cashlez_PaymentHistory cashlez_paymentHistory = new Cashlez_PaymentHistory(activity,activity);
+      cashlez_paymentHistory.doGetPaymentByDate(date);
+      result.success(cashlez_paymentHistory.getPaymentList());
+    }
+    else if(call.method.equals("clz_getPaymentList_ByMerchantTransactionId")){
+      String id = call.argument("id");
+
+      Cashlez_PaymentHistory cashlez_paymentHistory = new Cashlez_PaymentHistory(activity,activity);
+      cashlez_paymentHistory.doGetPaymentByMerchantTransactionId(id);
+      result.success(cashlez_paymentHistory.getPaymentList());
+    }
+    else if(call.method.equals("clz_getPaymentList_ByTransactionId")){
+      String id = call.argument("id");
+
+      Cashlez_PaymentHistory cashlez_paymentHistory = new Cashlez_PaymentHistory(activity,activity);
+      cashlez_paymentHistory.doGetPaymentByTransactionId(id);
+      result.success(cashlez_paymentHistory.getPaymentList());
+    }
 
     // NOT FOUND
     else { result.notImplemented(); }
+  }
+
+  public HashMap getStatus(){
+    HashMap<String,Object> output = new HashMap<String,Object>();
+    output.put(STATUS_CODE,this.sharedPreferences.getInt(STATUS_CODE,-1));
+    output.put(STATUS_MESSAGE,this.sharedPreferences.getString(STATUS_MESSAGE,""));
+    return output;
+  }
+
+  private CLPaymentCapability getPaymentCapability(){
+    Gson gson = new Gson();
+    return gson.fromJson(this.sharedPreferences.getString(PAYMENT_CAPABILITY,null),CLPaymentCapability.class);
+  }
+
+  private void clearSharedPreferences(){
+    SharedPreferences.Editor editor = this.sharedPreferences.edit();
+    editor.remove(PAYMENT_CAPABILITY);
+    editor.remove(STATUS_CODE);
+    editor.remove(STATUS_MESSAGE);
+    editor.remove(PAYMENT_HISTORY_LIST);
+    editor.apply();
   }
 
   /**

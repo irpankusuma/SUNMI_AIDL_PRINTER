@@ -22,7 +22,7 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 24
+    compileSdkVersion 24 //24
 
     defaultConfig {
         minSdkVersion 15
@@ -35,5 +35,7 @@ android {
 
 dependencies {
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.2.1'
+//    compile 'com.android.support:appcompat-v7:24.2.1'
+    implementation 'com.cashlez.android:cashlez:1.5.3.9'
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
