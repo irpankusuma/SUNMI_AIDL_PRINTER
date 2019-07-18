@@ -129,11 +129,9 @@ class PreOrderViewState extends State<PreOrderView>{
 
   Future<ResultStatus> clz_doLogin() async {
     ResultStatus _result = await SunmiAidlPrint.clz_doLogin(username:"testmkwk",pin:"777777");
-    print("Error Code : ${_result.statusCode}");
-    print("Error Message : ${_result.statusCode}");
     btn.csStatus(
       context: context,
-      status: _result.statusCode == 9999 ? FLOATINGSTATUS.SUCCESS : FLOATINGSTATUS.WARNING,
+      status: _result.statusCode == 0 ? FLOATINGSTATUS.SUCCESS : FLOATINGSTATUS.WARNING,
       msg: _result.statusMessage,
       second: 4
     );

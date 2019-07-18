@@ -257,6 +257,14 @@ class SunmiAidlPrint {
     return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage'],data: _result['PaymentHistoryList']);
   }
 
+  static Future<ResultStatus> clz_changePin({ String username }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("username", () => username);
+
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_changePin",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
+  }
+
 
 }
 

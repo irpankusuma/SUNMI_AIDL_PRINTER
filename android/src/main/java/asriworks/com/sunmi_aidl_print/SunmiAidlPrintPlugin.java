@@ -4,11 +4,10 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import asriworks.com.sunmi_aidl_print.cashlez.activation.Cashlez_Activation;
+import asriworks.com.sunmi_aidl_print.cashlez.changepin.Cashlez_ChangePin;
 import asriworks.com.sunmi_aidl_print.cashlez.history.Cashlez_PaymentHistory;
 import asriworks.com.sunmi_aidl_print.cashlez.login.Cashlez_Login;
 import asriworks.com.sunmi_aidl_print.util.Util;
@@ -282,6 +281,13 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
       Cashlez_PaymentHistory cashlez_paymentHistory = new Cashlez_PaymentHistory(activity,activity);
       cashlez_paymentHistory.doGetPaymentByTransactionId(id);
       result.success(cashlez_paymentHistory.getPaymentList());
+    }
+    else if(call.method.equals("clz_changePin")){
+        String username = call.argument("username");
+
+        Cashlez_ChangePin cashlez_changePin = new Cashlez_ChangePin(activity,activity);
+        cashlez_changePin.doChangePin(username);
+        result.success(this.getStatus());
     }
 
     // NOT FOUND
