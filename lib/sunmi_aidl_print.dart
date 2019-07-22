@@ -265,6 +265,62 @@ class SunmiAidlPrint {
     return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
   }
 
+  //PRINTER CASHLEZ
+  static Future<ResultStatus> clz_doInitPrinter() async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_doInitPrinter",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
+  }
+
+  static Future<ResultStatus> clz_doPrintQR({ @required Uint8List bitmap }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("bitmap", () => bitmap);
+    
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_doPrintQR",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
+  }
+
+  static Future<ResultStatus> clz_doCheckPrint() async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_doCheckPrint",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
+  }
+
+  static Future<ResultStatus> clz_doUnregisterPrinterReceiver() async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_doUnregisterPrinterReceiver",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
+  }
+
+  static Future<ResultStatus> clz_doClosePrinterConnection() async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_doClosePrinterConnection",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
+  }
+
+  static Future<ResultStatus> clz_doPayment({ TRANSACTION_TYPE type, String amount, String remarks, Uint8List image }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("type", () => type == TRANSACTION_TYPE.CASH ? 0 
+      : type == TRANSACTION_TYPE.DEBIT_PIN        ? 1
+      : type == TRANSACTION_TYPE.DEBIT_SIGNATURE  ? 2
+      : type == TRANSACTION_TYPE.CREDIT_PIN       ? 3 
+      : type == TRANSACTION_TYPE.CREDIT_SIGNATURE ? 4
+      : type == TRANSACTION_TYPE.LOCAL_PIN        ? 5
+      : type == TRANSACTION_TYPE.LOCAL_NOPIN      ? 6
+      : type == TRANSACTION_TYPE.INTERNATIONAL    ? 7
+      : 0
+    );
+    args.putIfAbsent("amount", () => amount);
+    args.putIfAbsent("remarks", () => remarks);
+    args.putIfAbsent("image", () => image);
+
+    Map<dynamic,dynamic> _result = await _channel.invokeMethod("clz_doPayment",args);
+    return new ResultStatus(statusCode:_result['StatusCode'],statusMessage:_result['StatusMessage']);
+  }
 
 }
 
@@ -274,3 +330,23 @@ enum SYMBOLOGY { UPC_A, UPC_E, EAN_13, EAN_8, CODE_39, ITF, CODEBAR, CODE_93, CO
 enum TEXTPOS { NO_PRINT_TEXT, ABOVE_BARCODE, BELOW_BARCODE, BOTH }
 enum ERRORLEVEL { L, M, Q, H }
 enum TEXTALIGN { LEFT, CENTER, RIGHT }
+enum CARABAYAR {
+  CASH,         // 0
+  DEBIT_CARD,   // 1
+  CREDIT_CARD,  // 2
+  DIMOPAY,      // 3
+  TCASH,        // 4
+  OVO,          // 5
+  GOJEK         // 6
+}
+
+enum TRANSACTION_TYPE {
+  CASH,               //0
+  DEBIT_PIN,          //1
+  DEBIT_SIGNATURE,    //2
+  CREDIT_PIN,         //3  
+  CREDIT_SIGNATURE,   //4
+  LOCAL_PIN,          //5
+  LOCAL_NOPIN,        //6
+  INTERNATIONAL       //7
+}

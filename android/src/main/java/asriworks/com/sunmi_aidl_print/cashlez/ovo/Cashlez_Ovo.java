@@ -31,7 +31,7 @@ public class Cashlez_Ovo implements ICLOvoService {
     public Cashlez_Ovo(Context context, Activity activity){
         this.util = new Util(activity,context);
         this.sharedPreferences = activity.getSharedPreferences("GWK_EKIOS",Context.MODE_PRIVATE);
-
+        this.ovoHandler = new CLOvoHandler(context,this);
     }
 
     private void setResult(int code,String msg){
@@ -56,8 +56,21 @@ public class Cashlez_Ovo implements ICLOvoService {
         editor.apply();
     }
 
-//    public void doCreateHandler(OvoActivity ovoActivity )
+    public void doPayOvo(CLPayment payment){
+        this.ovoHandler.doOvoPayment(payment);
+    }
 
+    public void doCheckOvo(){
+        if(this.paymentResponse != null){
+            this.ovoHandler.doOvoInquiry(paymentResponse);
+        } else {
+            this.setResult(0,"Invalid payment response");
+        }
+    }
+
+    public void doStartOvoHandler(){ this.ovoHandler.doStartOvoHandler(); }
+    public void doResumeOvoHandler(){ this.ovoHandler.doResumeOvoHandler(); }
+    public void doStopOvoHandler(){ this.ovoHandler.doStopOvoHandler(); }
 
     @Override
     public void onOvoPaymentSuccess(CLPaymentResponse response) {

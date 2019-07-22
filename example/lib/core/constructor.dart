@@ -26,4 +26,12 @@ class Menu {
 }
 
 
+class MenuCaraBayar {
+  final String imageURL;
+  final Text text;
+  final VoidCallback onPressed;
+
+  const MenuCaraBayar({ this.imageURL, this.text, this.onPressed });
+}
+
 

@@ -21,12 +21,20 @@ class _CheckOutViewState extends State<CheckOutView> {
   Button btn = new Button();
   final num_format = new NumberFormat("#,###.##");
   double total = 0;
+  List<MenuCaraBayar> _listcarabayar = <MenuCaraBayar>[];
 
   @override
   void initState() { 
     super.initState();
     this.calculateTotal();
-    print(widget.items);
+    
+    _listcarabayar.add(new MenuCaraBayar(imageURL:'',text:new Text('CASH'), onPressed:() => null));
+    _listcarabayar.add(new MenuCaraBayar(imageURL:'',text:new Text('DEBIT CARD'), onPressed:() => null));
+    _listcarabayar.add(new MenuCaraBayar(imageURL:'',text:new Text('CREDIT CARD'), onPressed:() => null));
+    _listcarabayar.add(new MenuCaraBayar(imageURL:'',text:new Text('DIMO QR'), onPressed:() => null));
+    _listcarabayar.add(new MenuCaraBayar(imageURL:'',text:new Text('OVO'), onPressed:() => null));
+    _listcarabayar.add(new MenuCaraBayar(imageURL:'',text:new Text('GOJEK'), onPressed:() => null));
+    _listcarabayar.add(new MenuCaraBayar(imageURL:'',text:new Text('TCASH / LINK AJA'), onPressed:() => null));
   }
 
   void calculateTotal(){
@@ -41,6 +49,15 @@ class _CheckOutViewState extends State<CheckOutView> {
         }
       }
     });
+  }
+
+  void buildCaraBayar(){
+    Navigator.of(context).push(
+      new MaterialPageRoute<Null>(
+        builder: (BuildContext ctx) => new CaraBayarMenu(items:_listcarabayar),
+        fullscreenDialog: true
+      )
+    );
   }
 
   @override
@@ -111,7 +128,7 @@ class _CheckOutViewState extends State<CheckOutView> {
                                   border:  new Border.all(color: Colors.green),
                                   borderRadius: new BorderRadius.circular(10.0),
                                   text: Text('   CHECKOUT   ',style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black)),
-                                  onPressed: () => null
+                                  onPressed: () => this.buildCaraBayar()
                                 ),
                               ],
                             ),
@@ -218,5 +235,53 @@ class _CheckOutViewState extends State<CheckOutView> {
         ),
       ) 
     ); 
+  }
+}
+
+class CaraBayarMenu extends StatelessWidget {
+  final List<MenuCaraBayar> items;
+  const CaraBayarMenu({Key key, this.items }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text('CARA BAYAR'),
+      ),
+      body: new Container(
+        child: new GridView.builder(
+          itemCount:items.length,
+          gridDelegate:new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:2),
+          itemBuilder: (BuildContext context, int i) => new MenuCustomGridButton(
+            text: items[i].text,
+            onPressed: items[i].onPressed,
+          ),
+        )
+      ),
+    );
+  }
+}
+
+class MenuCustomGridButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final Text text;
+
+  const MenuCustomGridButton({ this.text, this.onPressed}) : assert(text != null);
+
+  @override
+  Widget build(BuildContext context) {
+    return new InkWell(
+      onTap: onPressed,
+      child: new Card(
+        child: new Container(
+          padding: EdgeInsets.all(5),
+          child: new Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[text],
+          ),
+        ),
+      )
+    );
   }
 }

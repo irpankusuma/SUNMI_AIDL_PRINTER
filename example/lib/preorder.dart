@@ -127,18 +127,6 @@ class PreOrderViewState extends State<PreOrderView>{
     );
   }
 
-  Future<ResultStatus> clz_doLogin() async {
-    ResultStatus _result = await SunmiAidlPrint.clz_doLogin(username:"testmkwk",pin:"777777");
-    btn.csStatus(
-      context: context,
-      status: _result.statusCode == 0 ? FLOATINGSTATUS.SUCCESS : FLOATINGSTATUS.WARNING,
-      msg: _result.statusMessage,
-      second: 4
-    );
-  }
-
-  
-
   @override
   void dispose() { 
     super.dispose();
@@ -198,8 +186,6 @@ class PreOrderViewState extends State<PreOrderView>{
       )
     );
   }
-
-  
 
   void buildRegister(PreOrderViewState state){
     Navigator.of(context).push(
@@ -280,7 +266,7 @@ class PreOrderRender extends StatelessWidget {
                                             border:  new Border.all(color: Colors.green),
                                             borderRadius: new BorderRadius.circular(25.0),
                                             text: Text('BUY TICKET',style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black)),
-                                            onPressed: () => state.clz_doLogin() // state.buildRegister(state)
+                                            onPressed: () => state.buildRegister(state)
                                           ),
                                       ),
                                     ],

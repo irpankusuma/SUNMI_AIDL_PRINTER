@@ -4,13 +4,20 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
+import asriworks.com.sunmi_aidl_print.cashlez.Cashlez_State;
 import asriworks.com.sunmi_aidl_print.cashlez.activation.Cashlez_Activation;
 import asriworks.com.sunmi_aidl_print.cashlez.changepin.Cashlez_ChangePin;
+import asriworks.com.sunmi_aidl_print.cashlez.device.Cashlez_Printer;
 import asriworks.com.sunmi_aidl_print.cashlez.history.Cashlez_PaymentHistory;
 import asriworks.com.sunmi_aidl_print.cashlez.login.Cashlez_Login;
+import asriworks.com.sunmi_aidl_print.cashlez.ovo.Cashlez_Ovo;
+import asriworks.com.sunmi_aidl_print.cashlez.payment.Cashlez_BasePayment;
 import asriworks.com.sunmi_aidl_print.util.Util;
+import io.flutter.app.FlutterApplication;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -26,15 +33,21 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import com.cashlez.android.sdk.CLCardProcessingMode;
+import com.cashlez.android.sdk.CLPayment;
 import com.cashlez.android.sdk.CLPaymentCapability;
+import com.cashlez.android.sdk.bean.TransactionType;
+import com.cashlez.android.sdk.model.CLPrintObject;
+import com.cashlez.android.sdk.payment.CLVerificationMode;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
 /** SunmiAidlPrintPlugin */
 public class SunmiAidlPrintPlugin implements MethodCallHandler {
-  private static final String TAG = "SUNMI_AIDL_PRINT";
+  private static final String TAG = SunmiAidlPrintPlugin.class.getSimpleName();
   private final MethodChannel channel;
   private Activity activity;
   private Util util;
@@ -42,8 +55,15 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
   private SharedPreferences sharedPreferences;
   protected static final String STATUS_CODE = "StatusCode";
   protected static final String STATUS_MESSAGE = "StatusMessage";
-  protected static final String PAYMENT_CAPABILITY = "PaymentCapability";
-  protected static final String PAYMENT_HISTORY_LIST = "PaymentHistoryList";
+  protected static final String CLPAYMENT_CAPABILITY = "ClPaymentCapability";
+  protected static final String CLPAYMENT_HISTORY_LIST = "ClPaymentHistoryList";
+  protected static final String CLPAYMENT = "ClPayment";
+  protected static final String CLPAYMENT_RESPONSE = "ClPaymentResponse";
+  protected static final String CLREADER_COMPANION = "ClReaderCompanion";
+  protected static final String CLTCASH_RESPONSE = "ClTCachResponse";
+  protected static final String ClDIMO_RESPONSE = "ClDimoResponse";
+  protected static final String CLMANDIRI_PAY_RESPONSE = "ClMandiriPayResponse";
+  protected static final String CLTRANSFER_DETAIL = "ClTransferDetail";
 
 
   /** SUNMI WOYOU **/
@@ -238,8 +258,10 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
     else if(call.method.equals("clz_doLogin")){
       String username = call.argument("username");
       String pin = call.argument("pin");
+
       Cashlez_Login cashlez_login = new Cashlez_Login(activity,activity);
       cashlez_login.doLogin(username,pin);
+      Log.d(TAG,this.getSharedPreferences().toString());
       result.success(this.getStatus());
     }
     else if(call.method.equals("clz_clearSharedPreferences")){
@@ -289,9 +311,139 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
         cashlez_changePin.doChangePin(username);
         result.success(this.getStatus());
     }
+    else if(call.method.equals("clz_doStartOvoHandler")){
+      Cashlez_Ovo cashlez_ovo = new Cashlez_Ovo(activity,activity);
+      cashlez_ovo.doStartOvoHandler();
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_doResumOvoHandler")){
+      Cashlez_Ovo cashlez_ovo = new Cashlez_Ovo(activity,activity);
+      cashlez_ovo.doResumeOvoHandler();
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_doStopOvoHandler")){
+      Cashlez_Ovo cashlez_ovo = new Cashlez_Ovo(activity,activity);
+      cashlez_ovo.doStopOvoHandler();
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_doCheckOvo")){
+      Cashlez_Ovo cashlez_ovo = new Cashlez_Ovo(activity,activity);
+      cashlez_ovo.doCheckOvo();
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_doPayOvo")){
+
+      Cashlez_Ovo cashlez_ovo = new Cashlez_Ovo(activity,activity);
+//      cashlez_ovo.doPayOvo();
+    }
+
+    //CASHLEZ PRINTER
+    else if(call.method.equals("clz_doInitPrinter")){
+      Cashlez_Printer cashlez_printer = new Cashlez_Printer(activity,activity);
+      cashlez_printer.doInitPrinter();
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_doPrintText")){
+      Cashlez_Printer cashlez_printer = new Cashlez_Printer(activity,activity);
+      ArrayList<CLPrintObject> obj = null;
+
+      cashlez_printer.doPrintFreeText(obj);
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_doPrintQR")){
+      byte[] bytes = call.argument("bitmap");
+      Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+
+      Cashlez_Printer cashlez_printer = new Cashlez_Printer(activity,activity);
+      cashlez_printer.doPrintQR(bitmap);
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_doCheckPrint")){
+      Cashlez_Printer cashlez_printer = new Cashlez_Printer(activity,activity);
+      cashlez_printer.doCheckPrint();
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_doUnregisterPrinterReceiver")){
+      Cashlez_Printer cashlez_printer = new Cashlez_Printer(activity,activity);
+      cashlez_printer.doUnregisterPrinterReceiver();
+      result.success(this.getStatus());
+    }
+    else if(call.method.equals("clz_doClosePrinterConnection")){
+      Cashlez_Printer cashlez_printer = new Cashlez_Printer(activity,activity);
+      cashlez_printer.doClosePrinterConnection();
+      result.success(this.getStatus());
+    }
+
+    // PAYMENT
+    else if(call.method.equals("clz_doPayment")){
+        int code = call.argument("type");
+        String amount = call.argument("amount");
+        String remarks = call.argument("remarks");
+        byte[] image = call.argument("image");
+
+        Bundle bundle = new Bundle(); // gak ngerti di Bundle
+        Cashlez_BasePayment cashlez_basePayment = new Cashlez_BasePayment(activity,activity,bundle);
+
+        CLPayment clPayment = new CLPayment();
+        clPayment.setAmount(amount);
+        clPayment.setDescription(remarks);
+
+        if(code ==  0){
+            clPayment.setTransactionType(TransactionType.CASH);
+            cashlez_basePayment.doPayCash(clPayment);
+        } else if(code == 1){
+            clPayment.setTransactionType(TransactionType.DEBIT);
+            clPayment.setVerificationMode(CLVerificationMode.PIN);
+            cashlez_basePayment.doPayDebitPin(clPayment);
+        } else if(code == 2){
+            clPayment.setTransactionType(TransactionType.DEBIT);
+            clPayment.setVerificationMode(CLVerificationMode.SIGNATURE);
+            cashlez_basePayment.doPayDebitSign(clPayment);
+        } else if(code == 3){
+            clPayment.setTransactionType(TransactionType.CREDIT);
+            clPayment.setVerificationMode(CLVerificationMode.PIN);
+            cashlez_basePayment.doPayCreditPin(clPayment);
+        } else if(code == 4){
+            clPayment.setTransactionType(TransactionType.CREDIT);
+            clPayment.setVerificationMode(CLVerificationMode.SIGNATURE);
+            cashlez_basePayment.doPayCreditSign(clPayment);
+        } else if(code == 5){
+            clPayment.setCardProcessingMode(CLCardProcessingMode.LOCAL_CARD);
+            clPayment.setVerificationMode(CLVerificationMode.PIN);
+            cashlez_basePayment.doPayLocalPin(clPayment);
+        } else if(code == 6){
+            clPayment.setCardProcessingMode(CLCardProcessingMode.LOCAL_CARD);
+            clPayment.setVerificationMode(CLVerificationMode.NO_PIN);
+            cashlez_basePayment.doPayLocalNonPin(clPayment);
+        } else if(code == 5){
+            clPayment.setCardProcessingMode(CLCardProcessingMode.INTERNATIONAL_CARD);
+            cashlez_basePayment.doPayInternationalCard(clPayment);
+        } else {
+            clPayment.setTransactionType(TransactionType.CASH);
+            cashlez_basePayment.doPayCash(clPayment);
+        }
+
+        result.success(this.getStatus());
+    }
 
     // NOT FOUND
     else { result.notImplemented(); }
+  }
+
+  private HashMap getSharedPreferences(){
+    HashMap<String,Object> output = new HashMap<String,Object>();
+    output.put(STATUS_CODE,this.sharedPreferences.getInt(STATUS_CODE,-1));
+    output.put(STATUS_MESSAGE,this.sharedPreferences.getString(STATUS_MESSAGE,""));
+    output.put(CLPAYMENT_CAPABILITY,this.sharedPreferences.getString(CLPAYMENT_CAPABILITY,""));
+    output.put(CLPAYMENT_HISTORY_LIST,this.sharedPreferences.getString(CLPAYMENT_HISTORY_LIST,""));
+    output.put(CLPAYMENT,this.sharedPreferences.getString(CLPAYMENT,""));
+    output.put(CLPAYMENT_RESPONSE,this.sharedPreferences.getString(CLPAYMENT_RESPONSE,""));
+    output.put(CLREADER_COMPANION,this.sharedPreferences.getString(CLREADER_COMPANION,""));
+    output.put(CLTCASH_RESPONSE,this.sharedPreferences.getString(CLTCASH_RESPONSE,""));
+    output.put(ClDIMO_RESPONSE,this.sharedPreferences.getString(ClDIMO_RESPONSE,""));
+    output.put(CLMANDIRI_PAY_RESPONSE,this.sharedPreferences.getString(CLMANDIRI_PAY_RESPONSE,""));
+    output.put(CLTRANSFER_DETAIL,this.sharedPreferences.getString(CLTRANSFER_DETAIL,""));
+    return output;
   }
 
   public HashMap getStatus(){
@@ -303,15 +455,22 @@ public class SunmiAidlPrintPlugin implements MethodCallHandler {
 
   private CLPaymentCapability getPaymentCapability(){
     Gson gson = new Gson();
-    return gson.fromJson(this.sharedPreferences.getString(PAYMENT_CAPABILITY,null),CLPaymentCapability.class);
+    return gson.fromJson(this.sharedPreferences.getString(CLPAYMENT_CAPABILITY,null),CLPaymentCapability.class);
   }
 
   private void clearSharedPreferences(){
     SharedPreferences.Editor editor = this.sharedPreferences.edit();
-    editor.remove(PAYMENT_CAPABILITY);
+    editor.remove(CLPAYMENT_CAPABILITY);
     editor.remove(STATUS_CODE);
     editor.remove(STATUS_MESSAGE);
-    editor.remove(PAYMENT_HISTORY_LIST);
+    editor.remove(CLPAYMENT_HISTORY_LIST);
+    editor.remove(CLPAYMENT);
+    editor.remove(CLPAYMENT_RESPONSE);
+    editor.remove(CLREADER_COMPANION);
+    editor.remove(CLTCASH_RESPONSE);
+    editor.remove(ClDIMO_RESPONSE);
+    editor.remove(CLMANDIRI_PAY_RESPONSE);
+    editor.remove(CLTRANSFER_DETAIL);
     editor.apply();
   }
 

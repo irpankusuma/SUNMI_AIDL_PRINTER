@@ -3,6 +3,9 @@ package asriworks.com.sunmi_aidl_print.cashlez.login;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import asriworks.com.sunmi_aidl_print.cashlez.Cashlez_State;
 import asriworks.com.sunmi_aidl_print.util.Util;
 
 import com.cashlez.android.sdk.CLErrorResponse;
@@ -19,10 +22,10 @@ public class Cashlez_Login implements ICLLoginService{
     protected SharedPreferences sharedPreferences;
     protected static final String STATUS_CODE = "StatusCode";
     protected static final String STATUS_MESSAGE = "StatusMessage";
-    protected static final String PAYMENT_CAPABILITY = "PaymentCapability";
-    String TAG = "-- CLZ - LOGIN PRESENTER -- ";
+    protected static final String CLPAYMENT_CAPABILITY = "ClPaymentCapability";
+    private static final String TAG = Cashlez_Login.class.getSimpleName();
 
-    public Cashlez_Login(Context context,Activity activity) {
+    public Cashlez_Login(Context context, Activity activity) {
         loginHandler = new CLLoginHandler(context, this);
         this.util = new Util(activity,context);
         this.sharedPreferences = activity.getSharedPreferences("GWK_EKIOS",Context.MODE_PRIVATE);
@@ -38,8 +41,9 @@ public class Cashlez_Login implements ICLLoginService{
     private void setCLPaymentCapability(CLPaymentCapability paymentCapability){
         Gson gson = new Gson();
         String json = gson.toJson(paymentCapability);
+        Log.d(TAG,"paymentCapability : "+json);
         SharedPreferences.Editor editor = this.sharedPreferences.edit();
-        editor.putString(PAYMENT_CAPABILITY,json);
+        editor.putString(CLPAYMENT_CAPABILITY,json);
         editor.apply();
     }
 
@@ -49,6 +53,11 @@ public class Cashlez_Login implements ICLLoginService{
 
     public void doLogin(String username, String pin){
         loginHandler.doLogin(username,pin);
+    }
+    public void doLogout(){
+        SharedPreferences.Editor editor = this.sharedPreferences.edit();
+        editor.remove(CLPAYMENT_CAPABILITY);
+        editor.apply();
     }
 
     @Override
@@ -68,8 +77,7 @@ public class Cashlez_Login implements ICLLoginService{
 
     @Override
     public void onLoginSuccess(CLLoginResponse clLoginResponse){
-        CLPaymentCapability paymentCapability = clLoginResponse.getPaymentCapability();
-        this.setCLPaymentCapability(paymentCapability);
+        this.setCLPaymentCapability(clLoginResponse.getPaymentCapability());
         this.setResult(0,clLoginResponse.getMessage());
     }
 

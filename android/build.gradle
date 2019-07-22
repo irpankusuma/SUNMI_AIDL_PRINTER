@@ -26,6 +26,7 @@ android {
 
     defaultConfig {
         minSdkVersion 15
+//        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
@@ -38,4 +39,5 @@ dependencies {
 //    compile 'com.android.support:appcompat-v7:24.2.1'
     implementation 'com.cashlez.android:cashlez:1.5.3.9'
     implementation 'com.google.code.gson:gson:2.8.5'
+//    compile 'com.android.support:multidex:1.0.3'
 }
