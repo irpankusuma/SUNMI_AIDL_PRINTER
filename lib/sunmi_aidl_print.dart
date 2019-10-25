@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:sunmi_aidl_print/models.dart';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 
@@ -91,13 +93,6 @@ class SunmiAidlPrint {
     await _channel.invokeMethod("printColumnText",args);
   }
 
-  static Future<Null> printQRCodeZXING({ String text, int size }) async {
-    Map<String,dynamic> args = <String,dynamic>{};
-    args.putIfAbsent("text", () => text);
-    args.putIfAbsent("size", () => size);
-    await _channel.invokeMethod("printQRCodeZXING",args);
-  }
-
   static Future<Null> printQRCode({ String text, int moduleSize, ERRORLEVEL errorLevel }) async {
     Map<String,dynamic> args = <String,dynamic>{};
     args.putIfAbsent("text", () => text);
@@ -138,12 +133,6 @@ class SunmiAidlPrint {
     Map<String,dynamic> args = <String,dynamic>{};
     args.putIfAbsent("bitmap", () => bitmap);
     await _channel.invokeMethod("printBitmap",args);
-  }
-
-  static Future<Null> nextLine({ int line }) async {
-    Map<String,dynamic> args = <String,dynamic>{};
-    args.putIfAbsent("line", () => line);
-    await _channel.invokeMethod("nextLine",args);
   }
 
   static Future<Null> initBlackBox({ int width, int height }) async {
@@ -189,11 +178,14 @@ class SunmiAidlPrint {
   static Future<Null> boldOff() async {
     await _channel.invokeMethod("boldOff");
   }
+
+  static Future<void> printArray({ List<SunmiPrinter> array }) async {
+    Map<String,dynamic> args = <String,dynamic>{};
+    args.putIfAbsent("json", () => jsonEncode(array));
+    await _channel.invokeMethod("printArray",args);
+  }
 }
 
 
-enum GETINFO { PRINTER_SERIALNO, PRINTER_MODAL, PRINTER_VERSION, SERVICE_VERSION }
-enum SYMBOLOGY { UPC_A, UPC_E, EAN_13, EAN_8, CODE_39, ITF, CODEBAR, CODE_93, CODE_128 }
-enum TEXTPOS { NO_PRINT_TEXT, ABOVE_BARCODE, BELOW_BARCODE, BOTH }
-enum ERRORLEVEL { L, M, Q, H }
-enum TEXTALIGN { LEFT, CENTER, RIGHT }
+
+
